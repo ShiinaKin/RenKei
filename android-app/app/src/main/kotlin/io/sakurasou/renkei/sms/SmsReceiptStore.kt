@@ -2,15 +2,13 @@ package io.sakurasou.renkei.sms
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 data class SmsReceipt(
     val receivedAtEpochMillis: Long,
     val characterCount: Int,
 )
 
-/**
- * 第一阶段只持久化验收所需的元数据，不保存短信发送者或正文。
- */
 object SmsReceiptStore {
     private const val PREFERENCES_NAME = "sms_receipt"
     private const val KEY_RECEIVED_AT = "received_at"
@@ -21,10 +19,10 @@ object SmsReceiptStore {
         receipt: SmsReceipt,
     ) {
         preferences(context)
-            .edit()
-            .putLong(KEY_RECEIVED_AT, receipt.receivedAtEpochMillis)
-            .putInt(KEY_CHARACTER_COUNT, receipt.characterCount)
-            .apply()
+            .edit {
+                putLong(KEY_RECEIVED_AT, receipt.receivedAtEpochMillis)
+                    .putInt(KEY_CHARACTER_COUNT, receipt.characterCount)
+            }
     }
 
     fun latest(context: Context): SmsReceipt? {
@@ -53,6 +51,5 @@ object SmsReceiptStore {
         return { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    private fun preferences(context: Context): SharedPreferences =
-        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private fun preferences(context: Context): SharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 }

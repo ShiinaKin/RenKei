@@ -1,8 +1,11 @@
-@file:Suppress("FunctionNaming")
+@file:Suppress("ktlint:standard:function-naming")
 
 package io.sakurasou.renkei.ui.navigation
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -22,6 +25,7 @@ import io.sakurasou.renkei.ui.navigation.BottomDestination.PermissionsRoute
 import io.sakurasou.renkei.ui.navigation.BottomDestination.SettingsRoute
 import io.sakurasou.renkei.ui.screen.SettingsScreen
 import kotlinx.serialization.Serializable
+import kotlin.math.roundToInt
 
 @Serializable
 private sealed class BottomDestination(
@@ -30,15 +34,16 @@ private sealed class BottomDestination(
     @param:DrawableRes val icon: Int,
 ) : NavKey {
     @Serializable
-    data object SettingsRoute: BottomDestination("SettingsRoute", "设置", R.drawable.ic_settings)
+    data object SettingsRoute : BottomDestination("SettingsRoute", "设置", R.drawable.ic_settings)
+
     @Serializable
-    data object PermissionsRoute: BottomDestination("PermissionsRoute", "权限", R.drawable.ic_security)
+    data object PermissionsRoute : BottomDestination("PermissionsRoute", "权限", R.drawable.ic_security)
 }
 
 private val bottomDestinations: List<BottomDestination> =
     listOf(
         SettingsRoute,
-        PermissionsRoute
+        PermissionsRoute,
     )
 
 @Composable
@@ -82,6 +87,10 @@ fun RenKeiNavigation(
                     entry<SettingsRoute> { SettingsScreen() }
                     entry<PermissionsRoute> { permissionScreen() }
                 },
+            predictivePopTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { (it * 0.1).roundToInt() }) togetherWith
+                    slideOutHorizontally(targetOffsetX = { (it * 0.1).roundToInt() })
+            },
         )
     }
 }
