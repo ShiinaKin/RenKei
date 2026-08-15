@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.sakurasou.renkei.permission.PermissionStatus
 import io.sakurasou.renkei.permission.permissionStatuses
 import io.sakurasou.renkei.sms.SmsReceiptStore
+import io.sakurasou.renkei.ui.navigation.RenKeiNavigation
 import io.sakurasou.renkei.ui.screen.PermissionStatusScreen
 import io.sakurasou.renkei.ui.theme.RenKeiTheme
 
@@ -88,31 +89,33 @@ private fun RenKeiApp() {
         onDispose(closeListener)
     }
 
-    PermissionStatusScreen(
-        permissions = permissions,
-        callScreeningRoleGranted = callScreeningRoleGranted,
-        callScreeningRoleAvailable = callScreeningRoleAvailable,
-        latestReceipt = latestReceipt,
-        onRequestPermission = { permission ->
-            permissionLauncher.launch((permission.manifestName))
-        },
-        onRequestPermissions = {
-            val missingPermissions =
-                permissions
-                    .filterNot(PermissionStatus::granted)
-                    .map { it.permission.manifestName }
-                    .toTypedArray()
-            if (missingPermissions.isNotEmpty()) permissionBatchLauncher.launch(missingPermissions)
-        },
-        onRequestCallScreeningRole = {
-            if (callScreeningRoleAvailable && !callScreeningRoleGranted) {
-                roleLauncher.launch(
-                    roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING),
-                )
-            }
-        },
-        onOpenAppSettings = { openAppSettings(context) },
-    )
+    RenKeiNavigation {
+        PermissionStatusScreen(
+            permissions = permissions,
+            callScreeningRoleGranted = callScreeningRoleGranted,
+            callScreeningRoleAvailable = callScreeningRoleAvailable,
+            latestReceipt = latestReceipt,
+            onRequestPermission = { permission ->
+                permissionLauncher.launch(permission.manifestName)
+            },
+            onRequestPermissions = {
+                val missingPermissions =
+                    permissions
+                        .filterNot(PermissionStatus::granted)
+                        .map { it.permission.manifestName }
+                        .toTypedArray()
+                if (missingPermissions.isNotEmpty()) permissionBatchLauncher.launch(missingPermissions)
+            },
+            onRequestCallScreeningRole = {
+                if (callScreeningRoleAvailable && !callScreeningRoleGranted) {
+                    roleLauncher.launch(
+                        roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING),
+                    )
+                }
+            },
+            onOpenAppSettings = { openAppSettings(context) },
+        )
+    }
 }
 
 private fun openAppSettings(context: Context) {
