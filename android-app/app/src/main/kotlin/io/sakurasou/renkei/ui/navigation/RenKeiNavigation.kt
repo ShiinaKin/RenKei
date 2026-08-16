@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming", "FunctionNaming")
 
 package io.sakurasou.renkei.ui.navigation
 
@@ -18,13 +18,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.sakurasou.renkei.R
-import io.sakurasou.renkei.ui.navigation.BottomDestination.PermissionsRoute
-import io.sakurasou.renkei.ui.navigation.BottomDestination.SettingsRoute
+import io.sakurasou.renkei.ui.navigation.BottomDestination.HomeDestination
+import io.sakurasou.renkei.ui.navigation.BottomDestination.PermissionsDestination
+import io.sakurasou.renkei.ui.navigation.BottomDestination.SettingsDestination
+import io.sakurasou.renkei.ui.screen.HomeRoute
+import io.sakurasou.renkei.ui.screen.PermissionRoute
+import io.sakurasou.renkei.ui.screen.SettingsScreen
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 
@@ -35,26 +41,28 @@ private sealed class BottomDestination(
     @param:DrawableRes val icon: Int,
 ) : NavKey {
     @Serializable
-    data object SettingsRoute : BottomDestination("SettingsRoute", "设置", R.drawable.ic_settings)
+    data object HomeDestination : BottomDestination("HomeRoute", "主页", R.drawable.ic_home)
 
     @Serializable
-    data object PermissionsRoute : BottomDestination("PermissionsRoute", "权限", R.drawable.ic_security)
+    data object PermissionsDestination : BottomDestination("PermissionsRoute", "权限", R.drawable.ic_security)
+
+    @Serializable
+    data object SettingsDestination : BottomDestination("SettingRoute", "设置", R.drawable.ic_settings)
 }
 
 private val bottomDestinations: List<BottomDestination> =
     listOf(
-        SettingsRoute,
-        PermissionsRoute,
+        HomeDestination,
+        PermissionsDestination,
+        SettingsDestination,
     )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RenKeiNavigation(
     modifier: Modifier = Modifier,
-    homeScreen: @Composable () -> Unit,
-    permissionScreen: @Composable () -> Unit,
 ) {
-    val backStack = rememberNavBackStack(SettingsRoute)
+    val backStack = rememberNavBackStack(HomeDestination)
     val currentRoute = backStack.lastOrNull()
 
     Scaffold(
@@ -90,14 +98,20 @@ fun RenKeiNavigation(
             backStack = backStack,
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
             onBack = { backStack.removeLastOrNull() },
+            entryDecorators =
+                listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
             entryProvider =
                 entryProvider {
-                    entry<SettingsRoute> { homeScreen() }
-                    entry<PermissionsRoute> { permissionScreen() }
+                    entry<HomeDestination> { HomeRoute() }
+                    entry<PermissionsDestination> { PermissionRoute() }
+                    entry<SettingsDestination> { SettingsScreen() }
                 },
             predictivePopTransitionSpec = {
-                slideInHorizontally(initialOffsetX = { (it * 0.1).roundToInt() }) togetherWith
-                    slideOutHorizontally(targetOffsetX = { (it * 0.1).roundToInt() })
+                slideInHorizontally(initialOffsetX = { 0 }) togetherWith
+                    slideOutHorizontally(targetOffsetX = { 0 })
             },
         )
     }

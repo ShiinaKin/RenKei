@@ -1,9 +1,8 @@
-@file:Suppress("ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming", "FunctionNaming")
 
 package io.sakurasou.renkei.ui.screen
 
 import android.annotation.SuppressLint
-import android.system.Os.link
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import io.sakurasou.renkei.R
 import io.sakurasou.renkei.call.IncomingCallReceipt
 import io.sakurasou.renkei.sms.SmsReceipt
+import io.sakurasou.renkei.ui.viewmodel.HomeUiState
 import java.text.DateFormat
 import java.util.Date
 import java.util.Properties
@@ -41,8 +41,7 @@ import java.util.Properties
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    latestReceipt: SmsReceipt?,
-    latestIncomingCall: IncomingCallReceipt?,
+    uiState: HomeUiState,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) {
@@ -54,8 +53,8 @@ fun HomeScreen(
                     .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SmsMoniterStatusCard(latestReceipt)
-            IncomingCallMoniterStatusCard(latestIncomingCall)
+            SmsMoniterStatusCard(uiState.latestSms)
+            IncomingCallMoniterStatusCard(uiState.latestIncomingCall)
             HorizontalDivider(
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
@@ -100,6 +99,7 @@ private fun IncomingCallMoniterStatusCard(latestIncomingCall: IncomingCallReceip
 }
 
 @Composable
+@Suppress("LongMethod")
 private fun RightAndAbout() {
     val context = LocalContext.current
     val buildRecord =
@@ -199,15 +199,18 @@ private fun IncomingCallReceipt?.description(): String =
 @Composable
 private fun HomeScreenPreview() {
     HomeScreen(
-        latestReceipt =
-            SmsReceipt(
-                receivedAtEpochMillis = System.currentTimeMillis(),
-                content = "测试短信内容",
-            ),
-        latestIncomingCall =
-            IncomingCallReceipt(
-                receivedAtEpochMillis = System.currentTimeMillis(),
-                callerNumber = "+86 138 0000 0000",
+        uiState =
+            HomeUiState(
+                latestSms =
+                    SmsReceipt(
+                        receivedAtEpochMillis = System.currentTimeMillis(),
+                        content = "测试短信内容",
+                    ),
+                latestIncomingCall =
+                    IncomingCallReceipt(
+                        receivedAtEpochMillis = System.currentTimeMillis(),
+                        callerNumber = "+86 138 0000 0000",
+                    ),
             ),
     )
 }

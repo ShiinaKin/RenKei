@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming", "FunctionNaming")
 
 package io.sakurasou.renkei.ui.component
 

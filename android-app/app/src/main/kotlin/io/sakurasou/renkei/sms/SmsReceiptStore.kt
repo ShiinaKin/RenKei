@@ -51,5 +51,6 @@ object SmsReceiptStore {
         return { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    private fun preferences(context: Context): SharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private fun preferences(context: Context): SharedPreferences =
+        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 }

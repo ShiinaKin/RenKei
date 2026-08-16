@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming", "FunctionNaming")
 
 package io.sakurasou.renkei.ui.screen
 
@@ -29,16 +29,11 @@ import io.sakurasou.renkei.ui.theme.RenKeiTheme
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PermissionStatusScreen(
-    permissions: List<PermissionStatus>,
-    callScreeningRoleGranted: Boolean,
-    callScreeningRoleAvailable: Boolean,
-    onRequestPermission: (AppPermission) -> Unit,
-    onRequestPermissions: () -> Unit,
-    onRequestCallScreeningRole: () -> Unit,
-    onOpenAppSettings: () -> Unit,
+    uiState: PermissionUiState,
+    onAction: (PermissionAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hasMissingPermission = permissions.any { !it.granted }
+    val hasMissingPermission = uiState.permissions.any { !it.granted }
 
     Scaffold(modifier = modifier.fillMaxSize()) {
         Column(
@@ -54,22 +49,21 @@ fun PermissionStatusScreen(
             )
             Spacer(Modifier.height(8.dp))
             PermissionRequirements(
-                permissions = permissions,
-                callScreeningRoleGranted = callScreeningRoleGranted,
-                callScreeningRoleAvailable = callScreeningRoleAvailable,
-                onRequestPermission = onRequestPermission,
-                onRequestCallScreeningRole = onRequestCallScreeningRole,
+                permissions = uiState.permissions,
+                callScreeningRoleGranted = uiState.callScreeningRoleGranted,
+                callScreeningRoleAvailable = uiState.callScreeningRoleAvailable,
+                onAction = onAction,
             )
 
             if (hasMissingPermission) {
                 Button(
-                    onClick = onRequestPermissions,
+                    onClick = { onAction(PermissionAction.RequestAllPermissions) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("申请所有缺少的运行时权限")
                 }
                 OutlinedButton(
-                    onClick = onOpenAppSettings,
+                    onClick = { onAction(PermissionAction.OpenAppSettings) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("打开应用权限设置")
@@ -81,14 +75,14 @@ fun PermissionStatusScreen(
 
 @Composable
 private fun PermissionRequirements(
-    modifier: Modifier = Modifier,
     permissions: List<PermissionStatus>,
     callScreeningRoleGranted: Boolean,
     callScreeningRoleAvailable: Boolean,
-    onRequestPermission: (AppPermission) -> Unit,
-    onRequestCallScreeningRole: () -> Unit,
+    onAction: (PermissionAction) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         permissions.forEach { status ->
@@ -97,7 +91,7 @@ private fun PermissionRequirements(
                 description = status.permission.description,
                 granted = status.granted,
                 actionLabel = "申请此权限",
-                onAction = { onRequestPermission(status.permission) },
+                onAction = { onAction(PermissionAction.RequestPermission(status.permission)) },
             )
         }
 
@@ -108,7 +102,7 @@ private fun PermissionRequirements(
             statusWhenMissing = if (callScreeningRoleAvailable) "未启用" else "设备不支持",
             actionLabel = "设置为来电识别应用",
             actionEnabled = callScreeningRoleAvailable,
-            onAction = onRequestCallScreeningRole,
+            onAction = { onAction(PermissionAction.RequestCallScreeningRole) },
         )
 
         PermissionCard(
@@ -125,16 +119,16 @@ private fun PermissionRequirements(
 private fun PermissionStatusScreenPreview() {
     RenKeiTheme {
         PermissionStatusScreen(
-            permissions =
-                AppPermission.entries.mapIndexed { index, permission ->
-                    PermissionStatus(permission = permission, granted = index == 0)
-                },
-            callScreeningRoleGranted = false,
-            callScreeningRoleAvailable = true,
-            onRequestPermission = {},
-            onRequestPermissions = {},
-            onRequestCallScreeningRole = {},
-            onOpenAppSettings = {},
+            uiState =
+                PermissionUiState(
+                    permissions =
+                        AppPermission.entries.mapIndexed { index, permission ->
+                            PermissionStatus(permission = permission, granted = index == 0)
+                        },
+                    callScreeningRoleGranted = false,
+                    callScreeningRoleAvailable = true,
+                ),
+            onAction = {},
         )
     }
 }
