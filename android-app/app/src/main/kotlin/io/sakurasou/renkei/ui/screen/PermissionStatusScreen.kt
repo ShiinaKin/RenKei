@@ -2,10 +2,13 @@
 
 package io.sakurasou.renkei.ui.screen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +26,7 @@ import io.sakurasou.renkei.permission.PermissionStatus
 import io.sakurasou.renkei.ui.component.PermissionCard
 import io.sakurasou.renkei.ui.theme.RenKeiTheme
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PermissionStatusScreen(
     permissions: List<PermissionStatus>,
@@ -36,22 +40,19 @@ fun PermissionStatusScreen(
 ) {
     val hasMissingPermission = permissions.any { !it.granted }
 
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(modifier = modifier.fillMaxSize()) {
         Column(
             modifier =
                 Modifier
-                    .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp)
                     .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("RenKei 权限中心", style = MaterialTheme.typography.headlineLarge)
             Text(
                 "这里集中准备短信转发和来电通知所需的 Android 权限。所有申请都由你主动触发。",
                 style = MaterialTheme.typography.bodyLarge,
             )
-
+            Spacer(Modifier.height(8.dp))
             PermissionRequirements(
                 permissions = permissions,
                 callScreeningRoleGranted = callScreeningRoleGranted,
@@ -80,38 +81,43 @@ fun PermissionStatusScreen(
 
 @Composable
 private fun PermissionRequirements(
+    modifier: Modifier = Modifier,
     permissions: List<PermissionStatus>,
     callScreeningRoleGranted: Boolean,
     callScreeningRoleAvailable: Boolean,
     onRequestPermission: (AppPermission) -> Unit,
     onRequestCallScreeningRole: () -> Unit,
 ) {
-    permissions.forEach { status ->
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        permissions.forEach { status ->
+            PermissionCard(
+                label = "${status.permission.stage} · ${status.permission.title}",
+                description = status.permission.description,
+                granted = status.granted,
+                actionLabel = "申请此权限",
+                onAction = { onRequestPermission(status.permission) },
+            )
+        }
+
         PermissionCard(
-            label = "${status.permission.stage} · ${status.permission.title}",
-            description = status.permission.description,
-            granted = status.granted,
-            actionLabel = "申请此权限",
-            onAction = { onRequestPermission(status.permission) },
+            label = "来电通知 · 来电识别角色",
+            description = "允许系统在电话响铃前唤醒 RenKei。它不是普通权限，需要在单独的系统页面中确认。",
+            granted = callScreeningRoleGranted,
+            statusWhenMissing = if (callScreeningRoleAvailable) "未启用" else "设备不支持",
+            actionLabel = "设置为来电识别应用",
+            actionEnabled = callScreeningRoleAvailable,
+            onAction = onRequestCallScreeningRole,
+        )
+
+        PermissionCard(
+            label = "后端连接 · 网络访问",
+            description = "INTERNET 与网络状态权限属于安装时权限，无需系统弹窗。",
+            granted = true,
+            statusWhenGranted = "已具备",
         )
     }
-
-    PermissionCard(
-        label = "来电通知 · 来电识别角色",
-        description = "允许系统在电话响铃前唤醒 RenKei。它不是普通权限，需要在单独的系统页面中确认。",
-        granted = callScreeningRoleGranted,
-        statusWhenMissing = if (callScreeningRoleAvailable) "未启用" else "设备不支持",
-        actionLabel = "设置为来电识别应用",
-        actionEnabled = callScreeningRoleAvailable,
-        onAction = onRequestCallScreeningRole,
-    )
-
-    PermissionCard(
-        label = "后端连接 · 网络访问",
-        description = "INTERNET 与网络状态权限属于安装时权限，无需系统弹窗。",
-        granted = true,
-        statusWhenGranted = "已具备",
-    )
 }
 
 @Preview(showBackground = true)

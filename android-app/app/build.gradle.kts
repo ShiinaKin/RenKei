@@ -1,7 +1,7 @@
 import com.android.sdklib.AndroidVersion.VersionCodes
-import jdk.internal.jshell.debug.InternalDebugControl.release
 import org.gradle.kotlin.dsl.detektPlugins
-import java.lang.module.ModuleFinder.compose
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 plugins {
     alias(libs.plugins.ksp)
@@ -84,4 +84,42 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+tasks.register("generateBuildRecord") {
+    description = "Generate a build record with the current build time, commit ID, and version."
+    group = "build"
+    doLast {
+        val buildTime = LocalDateTime.now(ZoneId.of("UTC")).toString()
+        val commitId = getCheckedOutGitCommitHash()
+        val buildRecord =
+            """
+            buildTime=$buildTime
+            commitId=$commitId
+            version=${android.defaultConfig.versionName}
+            """.trimIndent()
+        val file = file("src/main/res/raw/build_record.properties")
+        file.parentFile.mkdirs()
+        file.writeText(buildRecord)
+    }
+}
+
+// https://gist.github.com/JonasGroeger/7620911
+private fun getCheckedOutGitCommitHash(): String {
+    val gitFolder = "${rootProject.projectDir}/../.git"
+    val takeFromHash = 12
+
+    // '.git/HEAD' contains either
+    //      in case of detached head: the currently checked out commit hash
+    //      otherwise: a reference to a file containing the current commit hash
+    val head = File(gitFolder, "HEAD").readText().split(":") // .git/HEAD
+    val isCommit = head.size == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
+    // val isRef = head.size > 1     // ref: refs/heads/master
+
+    return if (isCommit) {
+        head[0].trim().take(takeFromHash) // e5a7c79edabb
+    } else {
+        val refHead = File(gitFolder, head[1].trim()) // .git/refs/heads/master
+        refHead.readText().trim().take(takeFromHash)
+    }
 }
