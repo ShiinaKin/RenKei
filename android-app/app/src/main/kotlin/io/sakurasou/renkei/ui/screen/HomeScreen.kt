@@ -32,6 +32,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.sakurasou.renkei.R
+import io.sakurasou.renkei.call.IncomingCallReceipt
 import io.sakurasou.renkei.sms.SmsReceipt
 import java.text.DateFormat
 import java.util.Date
@@ -41,6 +42,7 @@ import java.util.Properties
 @Composable
 fun HomeScreen(
     latestReceipt: SmsReceipt?,
+    latestIncomingCall: IncomingCallReceipt?,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) {
@@ -53,7 +55,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             SmsMoniterStatusCard(latestReceipt)
-            IncomingCallMoniterStatusCard(latestReceipt)
+            IncomingCallMoniterStatusCard(latestIncomingCall)
             HorizontalDivider(
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
@@ -81,7 +83,7 @@ private fun SmsMoniterStatusCard(latestReceipt: SmsReceipt?) {
 }
 
 @Composable
-private fun IncomingCallMoniterStatusCard(latestReceipt: SmsReceipt?) {
+private fun IncomingCallMoniterStatusCard(latestIncomingCall: IncomingCallReceipt?) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -90,7 +92,7 @@ private fun IncomingCallMoniterStatusCard(latestReceipt: SmsReceipt?) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = latestReceipt.description(),
+                text = latestIncomingCall.description(),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
@@ -185,6 +187,14 @@ private fun SmsReceipt?.description(): String =
         "$time\n$content"
     }
 
+private fun IncomingCallReceipt?.description(): String =
+    if (this == null) {
+        "尚未检测到测试来电。启用来电识别角色后，请从另一部手机拨打本机。"
+    } else {
+        val time = DateFormat.getDateTimeInstance().format(Date(receivedAtEpochMillis))
+        "$time\n$callerNumber"
+    }
+
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
@@ -193,6 +203,11 @@ private fun HomeScreenPreview() {
             SmsReceipt(
                 receivedAtEpochMillis = System.currentTimeMillis(),
                 content = "测试短信内容",
+            ),
+        latestIncomingCall =
+            IncomingCallReceipt(
+                receivedAtEpochMillis = System.currentTimeMillis(),
+                callerNumber = "+86 138 0000 0000",
             ),
     )
 }

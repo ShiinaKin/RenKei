@@ -1,23 +1,93 @@
 package io.sakurasou.renkei.call
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
 import android.telecom.Call
 import android.telecom.CallScreeningService
+import android.telecom.TelecomManager
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import io.sakurasou.renkei.R
 
-/**
- * 目前只为申请系统的“来电识别和骚扰拦截”角色提供入口。
- * 来电事件上传会在后续步骤接入；此服务始终允许电话正常响铃。
- */
 class IncomingCallScreeningService : CallScreeningService() {
     override fun onScreenCall(callDetails: Call.Details) {
         if (callDetails.callDirection != Call.Details.DIRECTION_INCOMING) return
 
         respondToCall(
             callDetails,
-            CallResponse.Builder()
+            CallResponse
+                .Builder()
                 .setDisallowCall(false)
                 .setRejectCall(false)
                 .setSilenceCall(false)
                 .build(),
         )
+
+        val callerNumber = callDetails.callerNumber()
+        val receivedAt = callDetails.creationTimeMillis.takeIf { it > 0L } ?: System.currentTimeMillis()
+        val receipt =
+            IncomingCallReceipt(
+                receivedAtEpochMillis = receivedAt,
+                callerNumber = callerNumber,
+            )
+
+        IncomingCallReceiptStore.record(applicationContext, receipt)
+        showDebugNotification(applicationContext, receipt)
+    }
+
+    private fun showDebugNotification(
+        context: Context,
+        receipt: IncomingCallReceipt,
+    ) {
+        if (
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                DEBUG_CHANNEL_ID,
+                "来电监听调试",
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = "用于确认 RenKei 已收到系统来电事件"
+            },
+        )
+
+        val notification =
+            NotificationCompat
+                .Builder(context, DEBUG_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("RenKei 检测到来电")
+                .setContentText(receipt.callerNumber)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .build()
+
+        NotificationManagerCompat
+            .from(context)
+            .notify(receipt.receivedAtEpochMillis.hashCode(), notification)
+    }
+
+    private fun Call.Details.callerNumber(): String {
+        if (handlePresentation != TelecomManager.PRESENTATION_ALLOWED) {
+            return IncomingCallReceiptStore.UNKNOWN_CALLER
+        }
+
+        return handle
+            ?.schemeSpecificPart
+            ?.takeIf(String::isNotBlank)
+            ?: IncomingCallReceiptStore.UNKNOWN_CALLER
+    }
+
+    private companion object {
+        const val DEBUG_CHANNEL_ID = "incoming_call_debug"
     }
 }

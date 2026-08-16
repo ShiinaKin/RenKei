@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.sakurasou.renkei.call.IncomingCallReceiptStore
 import io.sakurasou.renkei.permission.PermissionStatus
 import io.sakurasou.renkei.permission.permissionStatuses
 import io.sakurasou.renkei.sms.SmsReceiptStore
@@ -90,10 +91,17 @@ private fun RenKeiApp() {
         onDispose(closeListener)
     }
 
+    var latestIncomingCall by remember { mutableStateOf(IncomingCallReceiptStore.latest(context)) }
+    DisposableEffect(context) {
+        val closeListener = IncomingCallReceiptStore.listen(context) { latestIncomingCall = it }
+        onDispose(closeListener)
+    }
+
     RenKeiNavigation(
         homeScreen = {
             HomeScreen(
                 latestReceipt = latestReceipt,
+                latestIncomingCall = latestIncomingCall,
             )
         },
         permissionScreen = {

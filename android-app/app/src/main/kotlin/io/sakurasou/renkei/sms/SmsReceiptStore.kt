@@ -21,7 +21,7 @@ object SmsReceiptStore {
         preferences(context)
             .edit {
                 putLong(KEY_RECEIVED_AT, receipt.receivedAtEpochMillis)
-                    .putString(KEY_CONTENT, receipt.content)
+                putString(KEY_CONTENT, receipt.content)
             }
     }
 
