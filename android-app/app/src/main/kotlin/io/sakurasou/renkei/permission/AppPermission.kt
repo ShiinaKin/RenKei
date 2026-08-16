@@ -37,8 +37,7 @@ enum class AppPermission(
     ),
     ;
 
-    fun isGranted(context: Context): Boolean =
-        ContextCompat.checkSelfPermission(context, manifestName) == PackageManager.PERMISSION_GRANTED
+    fun isGranted(context: Context): Boolean = ContextCompat.checkSelfPermission(context, manifestName) == PackageManager.PERMISSION_GRANTED
 }
 
 data class PermissionStatus(

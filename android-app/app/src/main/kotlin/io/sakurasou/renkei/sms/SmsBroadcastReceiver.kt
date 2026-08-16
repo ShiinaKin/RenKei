@@ -31,7 +31,7 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
             context,
             SmsReceipt(
                 receivedAtEpochMillis = receivedAt,
-                characterCount = body.length,
+                content = body,
             ),
         )
         showDebugNotification(context, sender, body, receivedAt)
@@ -62,7 +62,8 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         )
 
         val notification =
-            NotificationCompat.Builder(context, DEBUG_CHANNEL_ID)
+            NotificationCompat
+                .Builder(context, DEBUG_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("RenKei 收到来自 $sender 的短信")
                 .setContentText(body)

@@ -4,15 +4,12 @@ package io.sakurasou.renkei.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -23,18 +20,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.sakurasou.renkei.permission.AppPermission
 import io.sakurasou.renkei.permission.PermissionStatus
-import io.sakurasou.renkei.sms.SmsReceipt
 import io.sakurasou.renkei.ui.component.PermissionCard
 import io.sakurasou.renkei.ui.theme.RenKeiTheme
-import java.text.DateFormat
-import java.util.Date
 
 @Composable
 fun PermissionStatusScreen(
     permissions: List<PermissionStatus>,
     callScreeningRoleGranted: Boolean,
     callScreeningRoleAvailable: Boolean,
-    latestReceipt: SmsReceipt?,
     onRequestPermission: (AppPermission) -> Unit,
     onRequestPermissions: () -> Unit,
     onRequestCallScreeningRole: () -> Unit,
@@ -81,8 +74,6 @@ fun PermissionStatusScreen(
                     Text("打开应用权限设置")
                 }
             }
-
-            SmsReceiptCard(latestReceipt)
         }
     }
 }
@@ -123,25 +114,6 @@ private fun PermissionRequirements(
     )
 }
 
-@Composable
-private fun SmsReceiptCard(latestReceipt: SmsReceipt?) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("短信接收测试", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-            Text(latestReceipt.description())
-        }
-    }
-}
-
-private fun SmsReceipt?.description(): String =
-    if (this == null) {
-        "尚未收到测试短信。授权后，请用另一台设备给这台 Android 手机发一条普通 SMS。"
-    } else {
-        val time = DateFormat.getDateTimeInstance().format(Date(receivedAtEpochMillis))
-        "最近在 $time 收到一条 $characterCount 字符的短信。正文没有写入本地存储。"
-    }
-
 @Preview(showBackground = true)
 @Composable
 private fun PermissionStatusScreenPreview() {
@@ -153,7 +125,6 @@ private fun PermissionStatusScreenPreview() {
                 },
             callScreeningRoleGranted = false,
             callScreeningRoleAvailable = true,
-            latestReceipt = null,
             onRequestPermission = {},
             onRequestPermissions = {},
             onRequestCallScreeningRole = {},

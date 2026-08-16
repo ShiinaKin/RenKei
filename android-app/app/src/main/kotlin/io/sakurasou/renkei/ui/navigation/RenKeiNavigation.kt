@@ -23,7 +23,6 @@ import androidx.navigation3.ui.NavDisplay
 import io.sakurasou.renkei.R
 import io.sakurasou.renkei.ui.navigation.BottomDestination.PermissionsRoute
 import io.sakurasou.renkei.ui.navigation.BottomDestination.SettingsRoute
-import io.sakurasou.renkei.ui.screen.SettingsScreen
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 
@@ -49,6 +48,7 @@ private val bottomDestinations: List<BottomDestination> =
 @Composable
 fun RenKeiNavigation(
     modifier: Modifier = Modifier,
+    homeScreen: @Composable () -> Unit,
     permissionScreen: @Composable () -> Unit,
 ) {
     val backStack = rememberNavBackStack(SettingsRoute)
@@ -84,7 +84,7 @@ fun RenKeiNavigation(
             onBack = { backStack.removeLastOrNull() },
             entryProvider =
                 entryProvider {
-                    entry<SettingsRoute> { SettingsScreen() }
+                    entry<SettingsRoute> { homeScreen() }
                     entry<PermissionsRoute> { permissionScreen() }
                 },
             predictivePopTransitionSpec = {

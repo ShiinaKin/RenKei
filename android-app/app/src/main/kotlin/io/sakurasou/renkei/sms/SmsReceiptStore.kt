@@ -6,13 +6,13 @@ import androidx.core.content.edit
 
 data class SmsReceipt(
     val receivedAtEpochMillis: Long,
-    val characterCount: Int,
+    val content: String,
 )
 
 object SmsReceiptStore {
     private const val PREFERENCES_NAME = "sms_receipt"
     private const val KEY_RECEIVED_AT = "received_at"
-    private const val KEY_CHARACTER_COUNT = "character_count"
+    private const val KEY_CONTENT = "content"
 
     fun record(
         context: Context,
@@ -21,7 +21,7 @@ object SmsReceiptStore {
         preferences(context)
             .edit {
                 putLong(KEY_RECEIVED_AT, receipt.receivedAtEpochMillis)
-                    .putInt(KEY_CHARACTER_COUNT, receipt.characterCount)
+                    .putString(KEY_CONTENT, receipt.content)
             }
     }
 
@@ -32,7 +32,7 @@ object SmsReceiptStore {
 
         return SmsReceipt(
             receivedAtEpochMillis = receivedAt,
-            characterCount = preferences.getInt(KEY_CHARACTER_COUNT, 0),
+            content = preferences.getString(KEY_CONTENT, "")!!,
         )
     }
 
@@ -43,7 +43,7 @@ object SmsReceiptStore {
         val preferences = preferences(context)
         val listener =
             SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                if (key == KEY_RECEIVED_AT || key == KEY_CHARACTER_COUNT) {
+                if (key == KEY_RECEIVED_AT || key == KEY_CONTENT) {
                     onChanged(latest(context))
                 }
             }
