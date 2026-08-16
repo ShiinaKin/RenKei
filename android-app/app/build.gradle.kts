@@ -1,7 +1,10 @@
 import com.android.sdklib.AndroidVersion.VersionCodes
+import jdk.internal.jshell.debug.InternalDebugControl.release
 import org.gradle.kotlin.dsl.detektPlugins
+import java.lang.module.ModuleFinder.compose
 
 plugins {
+    alias(libs.plugins.ksp)
     alias(libs.plugins.detekt)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -34,8 +37,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
     buildFeatures {
         compose = true
@@ -45,13 +48,30 @@ android {
 dependencies {
     detektPlugins(libs.detekt.compose)
 
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.protobuf)
+
+    implementation(platform(libs.okhttp.bom))
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    testImplementation(libs.okhttp.mockwebserver)
+    implementation(platform(libs.retrofit.bom))
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization.converter)
+
+    implementation(libs.android.hilt.android)
+    ksp(libs.android.hilt.compiler)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.serialization.protobuf)
+
+    implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.material3.adaptive.layout)
+    // implementation(libs.androidx.material3.adaptive.navigation3)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
