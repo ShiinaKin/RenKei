@@ -56,9 +56,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     testImplementation(libs.okhttp.mockwebserver)
-    implementation(platform(libs.retrofit.bom))
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.kotlinx.serialization.converter)
 
     implementation(libs.android.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
