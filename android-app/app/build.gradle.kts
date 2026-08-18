@@ -1,5 +1,7 @@
 import com.android.sdklib.AndroidVersion.VersionCodes
+import jdk.internal.jshell.debug.InternalDebugControl.release
 import org.gradle.kotlin.dsl.detektPlugins
+import java.lang.module.ModuleFinder.compose
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -51,7 +53,6 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.serialization.protobuf)
-
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
@@ -60,6 +61,9 @@ dependencies {
     implementation(libs.android.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     ksp(libs.android.hilt.compiler)
+
+    implementation(libs.room)
+    ksp(libs.room.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -85,6 +89,10 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 tasks.register("generateBuildRecord") {

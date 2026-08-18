@@ -8,12 +8,30 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Telephony
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
 import io.sakurasou.renkei.R
+import io.sakurasou.renkei.module.IoDispatcher
+import io.sakurasou.renkei.module.dao.SMSEventDAO
+import io.sakurasou.renkei.module.entity.SMSEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SmsBroadcastReceiver : BroadcastReceiver() {
+    @Inject
+    lateinit var smsEventDao: SMSEventDAO
+
+    @Inject
+    @IoDispatcher
+    lateinit var ioDispatcher: CoroutineDispatcher
+
     override fun onReceive(
         context: Context,
         intent: Intent,
@@ -27,14 +45,33 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         val sender = messages.first().displayOriginatingAddress ?: "未知号码"
         val receivedAt = System.currentTimeMillis()
 
-        SmsReceiptStore.record(
-            context,
-            SmsReceipt(
-                receivedAtEpochMillis = receivedAt,
-                content = body,
-            ),
-        )
+        persistSms(sender, body, receivedAt)
         showDebugNotification(context, sender, body, receivedAt)
+    }
+
+    private fun persistSms(
+        sender: String,
+        body: String,
+        receivedAt: Long,
+    ) {
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + ioDispatcher).launch {
+            try {
+                runCatching {
+                    smsEventDao.saveSMSEvent(
+                        SMSEvent(
+                            number = sender,
+                            message = body,
+                            receivedAt = receivedAt,
+                        ),
+                    )
+                }.onFailure { error ->
+                    Log.e(TAG, "Failed to persist received SMS", error)
+                }
+            } finally {
+                pendingResult.finish()
+            }
+        }
     }
 
     private fun showDebugNotification(
@@ -76,6 +113,7 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
     }
 
     private companion object {
+        const val TAG = "SmsBroadcastReceiver"
         const val DEBUG_CHANNEL_ID = "sms_receipt_debug"
     }
 }

@@ -6,15 +6,13 @@
 -->
 <data-extraction-rules>
     <cloud-backup>
+        <exclude domain="database" path="renkei-db"/>
         <!-- TODO: Use <include> and <exclude> to control what is backed up.
         <include .../>
         <exclude .../>
         -->
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="database" path="renkei-db"/>
     </device-transfer>
-    -->
 </data-extraction-rules>

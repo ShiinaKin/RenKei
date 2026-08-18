@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sakurasou.renkei.call.IncomingCallReceipt
-import io.sakurasou.renkei.data.ReceiptRepository
+import io.sakurasou.renkei.data.IncomingCallRepository
+import io.sakurasou.renkei.data.SmsRepository
 import io.sakurasou.renkei.sms.SmsReceipt
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,26 +20,27 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel
-    @Inject
-    constructor(
-        receiptRepository: ReceiptRepository,
-    ) : ViewModel() {
-        val uiState: StateFlow<HomeUiState> =
-            combine(
-                receiptRepository.latestSms,
-                receiptRepository.latestIncomingCall,
-            ) { latestSms, latestIncomingCall ->
-                HomeUiState(
-                    latestSms = latestSms,
-                    latestIncomingCall = latestIncomingCall,
-                )
-            }.stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
-                initialValue = HomeUiState(),
+@Inject
+constructor(
+    smsRepository: SmsRepository,
+    incomingCallRepository: IncomingCallRepository,
+) : ViewModel() {
+    val uiState: StateFlow<HomeUiState> =
+        combine(
+            smsRepository.observeLatest(),
+            incomingCallRepository.observeLatest(),
+        ) { latestSms, latestIncomingCall ->
+            HomeUiState(
+                latestSms = latestSms,
+                latestIncomingCall = latestIncomingCall,
             )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+            initialValue = HomeUiState(),
+        )
 
-        private companion object {
-            const val STOP_TIMEOUT_MILLIS = 5_000L
-        }
+    private companion object {
+        const val STOP_TIMEOUT_MILLIS = 5_000L
     }
+}
