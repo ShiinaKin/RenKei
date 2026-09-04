@@ -71,6 +71,21 @@ docker run --rm \
 
 The Docker build compiles the fat JAR in a Java 21 builder stage, then copies it into a Java 21 JRE image. `JAVA_OPTS` is optional and can be used to pass JVM startup arguments. Secrets are supplied at runtime and `.env` is excluded from the build context.
 
+Alternatively, build and start the backend with Docker Compose:
+
+```shell
+docker compose up -d --build
+```
+
+Follow logs or stop the service with:
+
+```shell
+docker compose logs -f backend
+docker compose down
+```
+
+Set `RENKEI_PORT` to change the host port or `JAVA_OPTS` to override the default JVM arguments. The SQLite database is stored in the `renkei-data` named volume.
+
 ## Bark message delivery
 
 The backend sends a Bark notification after a device posts a message. The delivery path is:

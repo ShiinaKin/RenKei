@@ -1,0 +1,34 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: renkei-backend
+    container_name: renkei-backend
+    restart: unless-stopped
+    ports:
+      - "${RENKEI_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: jdbc:sqlite:/app/data/renkei.db
+      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx512m}"
+      BASIC_AUTH_USERNAME: admin
+      BASIC_AUTH_PASSWORD: 123456
+      JWT_SECRET: 123
+      JWT_ISSUER: hoshizora
+      JWT_AUDIENCE: hoshizora
+      JWT_REALM: hoshizora
+      BARK_ENABLED: true
+      BARK_BASE_URL: https://0.0.0.0:8081
+      BARK_TITLE: RenKei
+      BARK_GROUP: renkei
+      BARK_TIMEOUT_MILLIS: 10000
+      BARK_PUBLIC_BASE_URL: https://0.0.0.0:8080
+      BARK_ENCRYPTION_KEY: 12345678901234567890
+      BARK_MESSAGE_LINK_TTL_SECONDS: 600
+    volumes:
+      - renkei-data:/app/data
+
+volumes:
+  renkei-data:

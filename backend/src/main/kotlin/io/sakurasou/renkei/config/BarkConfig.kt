@@ -53,9 +53,9 @@ data class BarkConfig(
         val isLoopbackHTTP =
             uri.scheme.equals("http", ignoreCase = true) &&
                 uri.host.lowercase() in setOf("localhost", "127.0.0.1", "::1")
-        // require(isHTTPS || isLoopbackHTTP) {
-        //     "$label must use HTTPS (HTTP is allowed only for loopback development URLs)"
-        // }
+        require(isHTTPS || isLoopbackHTTP) {
+            "$label must use HTTPS (HTTP is allowed only for loopback development URLs)"
+        }
     }
 
     private companion object {
