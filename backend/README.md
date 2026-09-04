@@ -48,6 +48,29 @@ If the server starts successfully, you'll see the following output:
 2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
 ```
 
+### Docker
+
+Build the backend image:
+
+```shell
+docker build -t renkei-backend .
+```
+
+Run it with the local environment file and a persistent Docker volume for SQLite:
+
+```shell
+docker run --rm \
+  --name renkei-backend \
+  -p 8080:8080 \
+  --env-file .env \
+  -e DATABASE_URL=jdbc:sqlite:/app/data/renkei.db \
+  -e JAVA_OPTS="-Xms128m -Xmx512m" \
+  -v renkei-data:/app/data \
+  renkei-backend
+```
+
+The Docker build compiles the fat JAR in a Java 21 builder stage, then copies it into a Java 21 JRE image. `JAVA_OPTS` is optional and can be used to pass JVM startup arguments. Secrets are supplied at runtime and `.env` is excluded from the build context.
+
 ## Bark message delivery
 
 The backend sends a Bark notification after a device posts a message. The delivery path is:

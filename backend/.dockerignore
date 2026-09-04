@@ -1,0 +1,12 @@
+.gradle
+.idea
+.kotlin
+build
+data
+src/test
+.env
+.env.*
+*.iml
+.DS_Store
+local.properties
+gradlew.bat
