@@ -30,7 +30,7 @@ import io.sakurasou.renkei.ui.navigation.BottomDestination.PermissionsDestinatio
 import io.sakurasou.renkei.ui.navigation.BottomDestination.SettingsDestination
 import io.sakurasou.renkei.ui.screen.HomeRoute
 import io.sakurasou.renkei.ui.screen.PermissionRoute
-import io.sakurasou.renkei.ui.screen.SettingsScreen
+import io.sakurasou.renkei.ui.screen.SettingsRoute
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 
@@ -107,7 +107,7 @@ fun RenKeiNavigation(
                 entryProvider {
                     entry<HomeDestination> { HomeRoute() }
                     entry<PermissionsDestination> { PermissionRoute() }
-                    entry<SettingsDestination> { SettingsScreen() }
+                    entry<SettingsDestination> { SettingsRoute() }
                 },
             predictivePopTransitionSpec = {
                 slideInHorizontally(initialOffsetX = { 0 }) togetherWith

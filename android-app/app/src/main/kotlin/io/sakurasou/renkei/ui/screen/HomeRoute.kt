@@ -1,4 +1,4 @@
-@file:Suppress("FunctionNaming")
+@file:Suppress("ktlint:standard:function-naming", "FunctionNaming")
 
 package io.sakurasou.renkei.ui.screen
 
@@ -11,5 +11,8 @@ import io.sakurasou.renkei.ui.viewmodel.HomeViewModel
 @Composable
 fun HomeRoute(viewModel: HomeViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(uiState = uiState)
+    HomeScreen(
+        uiState = uiState,
+        onSendSimulatedNotification = viewModel::sendSimulatedNotification,
+    )
 }

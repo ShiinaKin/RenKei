@@ -14,6 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.sakurasou.renkei.R
+import io.sakurasou.renkei.consumer.EventDatabaseListener
 import io.sakurasou.renkei.module.IoDispatcher
 import io.sakurasou.renkei.module.dao.SMSEventDAO
 import io.sakurasou.renkei.module.entity.SMSEvent
@@ -27,6 +28,9 @@ import javax.inject.Inject
 class SmsBroadcastReceiver : BroadcastReceiver() {
     @Inject
     lateinit var smsEventDao: SMSEventDAO
+
+    @Inject
+    lateinit var eventDatabaseListener: EventDatabaseListener
 
     @Inject
     @IoDispatcher
@@ -65,6 +69,8 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                             receivedAt = receivedAt,
                         ),
                     )
+                }.onSuccess {
+                    eventDatabaseListener.notifyNewEvent()
                 }.onFailure { error ->
                     Log.e(TAG, "Failed to persist received SMS", error)
                 }

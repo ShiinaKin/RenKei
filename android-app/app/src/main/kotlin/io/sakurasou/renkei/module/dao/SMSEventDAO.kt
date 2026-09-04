@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface SMSEventDAO {
+    @Query("SELECT * FROM sms_event WHERE status != 'SENT' ORDER BY created_time, id")
+    suspend fun findPending(): List<SMSEvent>
+
     @Query("SELECT * FROM sms_event ORDER BY created_time DESC, id DESC LIMIT 1")
     suspend fun findLatest(): SMSEvent?
 

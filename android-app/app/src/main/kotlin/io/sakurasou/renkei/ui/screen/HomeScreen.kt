@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +43,7 @@ import java.util.Properties
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
+    onSendSimulatedNotification: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) {
@@ -55,11 +57,60 @@ fun HomeScreen(
         ) {
             SmsMoniterStatusCard(uiState.latestSms)
             IncomingCallMoniterStatusCard(uiState.latestIncomingCall)
+            SimulatedNotificationCard(
+                isSending = uiState.isSendingSimulatedNotification,
+                message = uiState.simulatedNotificationMessage,
+                isError = uiState.isSimulatedNotificationError,
+                onSend = onSendSimulatedNotification,
+            )
             HorizontalDivider(
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
             )
             RightAndAbout()
+        }
+    }
+}
+
+@Composable
+private fun SimulatedNotificationCard(
+    isSending: Boolean,
+    message: String?,
+    isError: Boolean,
+    onSend: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Bark 推送测试",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = "通过当前服务器配置发送一条加密模拟消息。",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Button(
+                onClick = onSend,
+                enabled = !isSending,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(if (isSending) "正在发送…" else "发送模拟通知")
+            }
+            message?.let {
+                Text(
+                    text = it,
+                    color =
+                        if (isError) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 }

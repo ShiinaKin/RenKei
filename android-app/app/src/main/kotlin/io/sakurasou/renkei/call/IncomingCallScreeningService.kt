@@ -8,12 +8,34 @@ import android.content.pm.PackageManager
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.telecom.TelecomManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
 import io.sakurasou.renkei.R
+import io.sakurasou.renkei.consumer.EventDatabaseListener
+import io.sakurasou.renkei.module.IoDispatcher
+import io.sakurasou.renkei.module.dao.IncomingCallEventDAO
+import io.sakurasou.renkei.module.entity.IncomingCallEvent
+import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class IncomingCallScreeningService : CallScreeningService() {
+    @Inject
+    lateinit var incomingCallEventDAO: IncomingCallEventDAO
+
+    @Inject
+    lateinit var eventDatabaseListener: EventDatabaseListener
+
+    @Inject
+    @IoDispatcher
+    lateinit var ioDispatcher: CoroutineDispatcher
+
     override fun onScreenCall(callDetails: Call.Details) {
         if (callDetails.callDirection != Call.Details.DIRECTION_INCOMING) return
 
@@ -36,7 +58,25 @@ class IncomingCallScreeningService : CallScreeningService() {
             )
 
         IncomingCallReceiptStore.record(applicationContext, receipt)
+        persistIncomingCall(receipt)
         showDebugNotification(applicationContext, receipt)
+    }
+
+    private fun persistIncomingCall(receipt: IncomingCallReceipt) {
+        CoroutineScope(SupervisorJob() + ioDispatcher).launch {
+            runCatching {
+                incomingCallEventDAO.save(
+                    IncomingCallEvent(
+                        number = receipt.callerNumber,
+                        createdTime = receipt.receivedAtEpochMillis,
+                    ),
+                )
+            }.onSuccess {
+                eventDatabaseListener.notifyNewEvent()
+            }.onFailure { error ->
+                Log.e(TAG, "Failed to persist incoming call", error)
+            }
+        }
     }
 
     private fun showDebugNotification(
@@ -88,6 +128,7 @@ class IncomingCallScreeningService : CallScreeningService() {
     }
 
     private companion object {
+        const val TAG = "IncomingCallService"
         const val DEBUG_CHANNEL_ID = "incoming_call_debug"
     }
 }

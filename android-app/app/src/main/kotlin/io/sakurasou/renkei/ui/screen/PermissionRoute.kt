@@ -1,4 +1,4 @@
-@file:Suppress("FunctionNaming")
+@file:Suppress("ktlint:standard:function-naming", "FunctionNaming")
 
 package io.sakurasou.renkei.ui.screen
 
