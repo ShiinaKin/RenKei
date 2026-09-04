@@ -1,0 +1,35 @@
+ktor:
+  deployment:
+    port: 8080
+  application:
+    modules:
+      - io.sakurasou.renkei.MainKt.mainModule
+    database:
+      driver: "$DATABASE_DRIVER:org.sqlite.JDBC"
+      url: "$DATABASE_URL:jdbc:sqlite:data/renkei.db"
+      username: "$DATABASE_USERNAME:"
+      password: "$DATABASE_PASSWORD:"
+client:
+  timeout: "$CLIENT_TIMEOUT:30000"
+  proxy:
+    address: "$CLIENT_PROXY_ADDRESS:disabled"
+io:
+  ktor:
+    development: "$DEVELOPMENT:false"
+basic:
+    username: $BASIC_AUTH_USERNAME
+    password: $BASIC_AUTH_PASSWORD
+jwt:
+  secret: $JWT_SECRET
+  issuer: $JWT_ISSUER
+  audience: $JWT_AUDIENCE
+  realm: $JWT_REALM
+bark:
+  enabled: "$BARK_ENABLED:false"
+  baseUrl: "$BARK_BASE_URL:https://api.day.app"
+  publicBaseUrl: "$BARK_PUBLIC_BASE_URL:"
+  title: "$BARK_TITLE:RenKei"
+  group: "$BARK_GROUP:renkei"
+  encryptionKey: "$BARK_ENCRYPTION_KEY:"
+  timeoutMillis: "$BARK_TIMEOUT_MILLIS:10000"
+  messageLinkTtlSeconds: "$BARK_MESSAGE_LINK_TTL_SECONDS:600"
