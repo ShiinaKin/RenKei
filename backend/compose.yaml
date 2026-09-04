@@ -7,16 +7,15 @@ services:
     container_name: renkei-backend
     restart: unless-stopped
     ports:
-      - "${RENKEI_PORT:-8080}:8080"
+      - "8080:8080"
     environment:
       DATABASE_URL: jdbc:sqlite:/app/data/renkei.db
-      JAVA_OPTS: "${JAVA_OPTS:--Xms128m -Xmx512m}"
       BASIC_AUTH_USERNAME: admin
       BASIC_AUTH_PASSWORD: 123456
       JWT_SECRET: 123
-      JWT_ISSUER: hoshizora
-      JWT_AUDIENCE: hoshizora
-      JWT_REALM: hoshizora
+      JWT_ISSUER: renkei
+      JWT_AUDIENCE: renkei
+      JWT_REALM: renkei
       BARK_ENABLED: true
       BARK_BASE_URL: https://0.0.0.0:8081
       BARK_TITLE: RenKei
